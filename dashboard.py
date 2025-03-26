@@ -84,7 +84,7 @@ def update_graphs(n):
     vol_fig.update_layout(title='Volatilités calculées',
                           xaxis_title='Période',
                           yaxis_title='Volatilité en %',
-                          yaxis=dict(range=[0, 5]),
+                          yaxis=dict(range=[0, 3]),
                           template='plotly_dark')
 
     return price_fig, vol_fig
