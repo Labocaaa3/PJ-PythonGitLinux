@@ -14,6 +14,7 @@ def load_data():
         df = pd.read_csv('eurostoxx50_data.csv')
         df['Date'] = pd.to_datetime(df['Date'])
         df = df.sort_values(by='Date')
+	df['Price']=pd.to_numeric(df['Price'],errors='coerce')
         return df
     else:
         return pd.DataFrame(columns=['Date', 'Index', 'Price'])
@@ -64,30 +65,29 @@ def update_graphs(n):
             name='Prix Eurostoxx 50'
         )
     ])
-    price_fig.update_layout(title='Prix Eurostoxx 50 en temps réel',
-                            xaxis_title='Date',
-                            yaxis_title='Prix',
+    price_fig.update_layout(title='Price Eurostoxx50',
+                            xaxis_title='date',
+                            yaxis_title='prix',
                             template='plotly_dark')
     
-    # Calcul et affichage de la volatilité
-    volatility = calculate_volatility(df)
-    if volatility is not None:
-        vol_fig = go.Figure(data=[
-            go.Bar(
-                x=[str(df['Date'].max())],
-                y=[volatility],
-                name='Volatilité'
-            )
-        ])
-        vol_fig.update_layout(title='Volatilité de l\'Eurostoxx 50 (dernière heure)',
-                              xaxis_title='Date',
-                              yaxis_title='Volatilité',
-                              template='plotly_dark')
-    else:
-        vol_fig = go.Figure()
-    
+    # Calcul de la volatilité
+    vol_10min = calculate_volatility(df, 10)
+    vol_30min = calculate_volatility(df, 30)
+    vol_60min = calculate_volatility(df, 60)  # Volatilité sur 1 heure (déjà existante)
+   
+    # Préparation des graphiques de volatilité
+    vol_fig = go.Figure()
+    vol_fig.add_trace(go.Bar(x=['Volatilité 10 min'], y=[vol_10min if vol_10min else 0], name='Volatilité 10 min'))
+    vol_fig.add_trace(go.Bar(x=['Volatilité 30 min'], y=[vol_30min if vol_30min else 0], name='Volatilité 30 min'))
+    vol_fig.add_trace(go.Bar(x=['Volatilité 1 heure'], y=[vol_60min if vol_60min else 0], name='Volatilité 1 heure'))
+   
+    vol_fig.update_layout(title='Volatilités calculées',
+                          xaxis_title='Période',
+                          yaxis_title='Volatilité',
+                          template='plotly_dark')
+   
     return price_fig, vol_fig
 
 # Lancer l'application
 if __name__ == '__main__':
-	app.run(debug=True)
+    app.run(debug=True)
